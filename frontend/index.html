@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RansomShield EDR Command Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "surface": "#10141a",
+                    "surface-dim": "#10141a",
+                    "surface-bright": "#353940",
+                    "surface-container-lowest": "#0a0e14",
+                    "surface-container-low": "#181c22",
+                    "surface-container": "#1c2026",
+                    "surface-container-high": "#262a31",
+                    "surface-container-highest": "#31353c",
+                    "on-surface": "#dfe2eb",
+                    "on-surface-variant": "#bac9cc",
+                    "outline": "#849396",
+                    "outline-variant": "#3b494c",
+                    "primary": "#c3f5ff",
+                    "primary-fixed-dim": "#00daf3",
+                    "primary-fixed": "#9cf0ff",
+                    "primary-container": "#00e5ff",
+                    "on-primary-container": "#00626e",
+                    "secondary": "#c1c7d2",
+                    "secondary-container": "#464c55",
+                    "error": "#ffb4ab",
+                    "error-container": "#93000a",
+                    "on-error": "#690005",
+                    "on-error-container": "#ffdad6",
+                    "background": "#10141a"
+                },
+                borderRadius: {
+                    DEFAULT: "0.125rem",
+                    lg: "0.25rem",
+                    xl: "0.5rem",
+                    full: "0.75rem"
+                },
+                spacing: {
+                    "margin-mobile": "16px",
+                    "margin-desktop": "32px",
+                    "gutter": "16px"
+                },
+                fontFamily: {
+                    "headline-md": ["Inter"],
+                    "data-mono": ["JetBrains Mono"],
+                    "display-lg": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "body-md": ["Inter"]
+                },
+                fontSize: {
+                    "headline-md": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }],
+                    "data-mono": ["14px", { lineHeight: "20px", fontWeight: "500" }],
+                    "display-lg": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }],
+                    "label-caps": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "700" }],
+                    "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }]
+                }
+            }
+        }
+    }
+</script>
+<style>
+    .material-symbols-outlined { font-family: 'Material Symbols Outlined'; font-weight: normal; font-style: normal; }
+    .pulse-glow { animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    @keyframes pulse-glow { 0%,100% { box-shadow: 0 0 4px 0 rgba(0,218,243,.4); opacity:1 } 50% { box-shadow: 0 0 12px 2px rgba(0,218,243,.8); opacity:.5 } }
+    .pulse-glow-green { animation: pulse-glow-green 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    @keyframes pulse-glow-green { 0%,100% { box-shadow: 0 0 4px 0 rgba(74,222,128,.4); opacity:1 } 50% { box-shadow: 0 0 12px 2px rgba(74,222,128,.8); opacity:.5 } }
+    .pulse-critical { animation: pulse-critical 1.4s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    @keyframes pulse-critical { 0%,100% { box-shadow: 0 0 4px 0 rgba(255,80,80,.5); opacity:1 } 50% { box-shadow: 0 0 14px 3px rgba(255,80,80,.9); opacity:.6 } }
+    .chart-grid { background-image: linear-gradient(to right,#3b494c 1px,transparent 1px), linear-gradient(to bottom,#3b494c 1px,transparent 1px); background-size:20px 20px; opacity:.15; }
+    ::-webkit-scrollbar { width:4px; }
+    ::-webkit-scrollbar-track { background:#10141a; }
+    ::-webkit-scrollbar-thumb { background:#3b494c; }
+    ::-webkit-scrollbar-thumb:hover { background:#00daf3; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .nav-link.active { color:#c3f5ff; background: rgba(70,76,85,.3); border-left-color:#00daf3; box-shadow:0 0 8px rgba(0,218,243,.4); }
+    .nav-link { border-left: 4px solid transparent; }
+    .status-normal { color:#4ade80; }
+    .status-suspicious { color:#facc15; }
+    .status-high { color:#fb923c; }
+    .status-critical { color:#ffb4ab; }
+    .toast { transition: opacity .3s, transform .3s; }
+</style>
+</head>
+<body class="bg-background text-on-surface h-screen overflow-hidden flex font-body-md text-body-md">
+
+<!-- SIDEBAR -->
+<nav class="bg-surface h-screen w-64 fixed left-0 top-0 border-r border-outline-variant flex flex-col py-6 z-50">
+    <div class="px-6 mb-8 flex items-center gap-3">
+        <div class="w-8 h-8 rounded bg-primary-fixed-dim/20 border border-primary-fixed-dim flex items-center justify-center pulse-glow">
+            <span class="material-symbols-outlined text-primary-fixed-dim" style="font-size:18px;">shield</span>
+        </div>
+        <div class="flex flex-col">
+            <h1 class="font-headline-md text-headline-md font-bold text-primary tracking-tighter leading-none">RansomShield</h1>
+            <span class="text-on-surface-variant text-[10px] tracking-widest">EDR COMMAND CENTER</span>
+        </div>
+    </div>
+
+    <ul class="flex flex-col gap-1 px-4 flex-1" id="navLinks">
+        <li><a data-page="dashboard" class="nav-link active flex items-center gap-3 px-3 py-3 rounded text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-all cursor-pointer">
+            <span class="material-symbols-outlined text-[20px]">dashboard</span><span>Dashboard</span></a></li>
+        <li><a data-page="threat" class="nav-link flex items-center gap-3 px-3 py-3 rounded text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-all cursor-pointer">
+            <span class="material-symbols-outlined text-[20px]">security</span><span>Threat Monitor</span></a></li>
+        <li><a data-page="events" class="nav-link flex items-center gap-3 px-3 py-3 rounded text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-all cursor-pointer">
+            <span class="material-symbols-outlined text-[20px]">event_note</span><span>Security Events</span></a></li>
+        <li><a data-page="risk" class="nav-link flex items-center gap-3 px-3 py-3 rounded text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-all cursor-pointer">
+            <span class="material-symbols-outlined text-[20px]">analytics</span><span>Risk Analysis</span></a></li>
+        <li><a data-page="deception" class="nav-link flex items-center gap-3 px-3 py-3 rounded text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-all cursor-pointer">
+            <span class="material-symbols-outlined text-[20px]">flip_camera_ios</span><span>Deception Center</span></a></li>
+        <li><a data-page="incidents" class="nav-link flex items-center gap-3 px-3 py-3 rounded text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-all cursor-pointer">
+            <span class="material-symbols-outlined text-[20px]">report</span><span>Incidents</span></a></li>
+    </ul>
+
+    <div class="px-4 mt-4">
+        <button id="simulateBtn" class="w-full flex items-center justify-center gap-2 bg-primary-fixed-dim/10 border border-primary-fixed-dim/40 text-primary-fixed-dim px-3 py-2.5 rounded text-sm font-semibold hover:bg-primary-fixed-dim/20 transition-all">
+            <span class="material-symbols-outlined text-[18px]">science</span> Run Simulation
+        </button>
+        <button id="resetBtn" class="w-full mt-2 flex items-center justify-center gap-2 bg-surface-container-high border border-outline-variant text-on-surface-variant px-3 py-2 rounded text-xs hover:text-on-surface transition-all">
+            <span class="material-symbols-outlined text-[16px]">restart_alt</span> Reset Demo State
+        </button>
+    </div>
+</nav>
+
+<!-- MAIN -->
+<div class="ml-64 flex-1 flex flex-col h-screen">
+
+    <header class="bg-surface-container/80 backdrop-blur-md h-16 border-b border-outline-variant flex items-center justify-between px-margin-desktop shrink-0">
+        <div class="flex items-center gap-3">
+            <div id="connDot" class="w-2 h-2 rounded-full bg-outline"></div>
+            <span id="connLabel" class="font-data-mono text-data-mono text-xs text-on-surface-variant">Connecting...</span>
+        </div>
+        <div class="flex items-center gap-6">
+            <span class="material-symbols-outlined text-[22px] text-on-surface-variant">notifications</span>
+            <img alt="Admin" class="w-8 h-8 rounded border border-outline-variant object-cover grayscale opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuActLmYFG8oV1jMyo74ieCidhC_Yjze5LJpSYVvQs-kikdIoHX_kmz7rvxa4BWxD6WwtwK-1kW4LQ5du6iBvUNHSKbO59uPxUIATn5qgY8dJ9O0PkNe-BwKphctxKIivqk-Hy3u4JpIXb_farGYf5pQt4kjzBjzFVIw2ZIjoMTRqJ7BQ3fnP7O6CmdGVTJnZ-jRJzXdmH9NAQVExAeH8MNV8BYXDwXqMSOEO4ngNww2NcjnkFHvC40CBA"/>
+        </div>
+    </header>
+
+    <main class="flex-1 overflow-y-auto p-6">
+
+        <!-- ============ DASHBOARD ============ -->
+        <section id="page-dashboard" class="page active">
+            <div class="grid grid-cols-5 gap-3 mb-6">
+                <div class="bg-surface-container/50 border border-outline-variant rounded p-4 flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="font-label-caps text-label-caps text-on-surface-variant">RISK SCORE</span>
+                        <span class="material-symbols-outlined text-sm" id="riskIcon">verified_user</span>
+                    </div>
+                    <div class="flex items-end gap-2">
+                        <span class="font-display-lg text-display-lg" id="riskScore">0</span>
+                        <span class="font-data-mono text-data-mono text-outline mb-2">/100</span>
+                    </div>
+                    <div class="mt-2 flex items-center gap-2">
+                        <div class="w-1.5 h-1.5 rounded-full pulse-glow-green" id="riskDot"></div>
+                        <span class="font-data-mono text-data-mono text-[10px]" id="riskLabel">LOADING</span>
+                    </div>
+                </div>
+                <div class="bg-surface-container/50 border border-outline-variant rounded p-4 flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="font-label-caps text-label-caps text-on-surface-variant">FILES MONITORED</span>
+                        <span class="material-symbols-outlined text-outline-variant text-sm">folder_open</span>
+                    </div>
+                    <span class="font-display-lg text-display-lg text-on-surface" id="filesMonitored">0</span>
+                </div>
+                <div class="bg-surface-container/50 border border-outline-variant rounded p-4 flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="font-label-caps text-label-caps text-on-surface-variant">THREATS BLOCKED</span>
+                        <span class="material-symbols-outlined text-outline-variant text-sm">gpp_bad</span>
+                    </div>
+                    <span class="font-display-lg text-display-lg text-primary-fixed-dim" id="threatsBlocked">0</span>
+                </div>
+                <div class="bg-surface-container/50 border border-outline-variant rounded p-4 flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="font-label-caps text-label-caps text-on-surface-variant">HONEYPOTS</span>
+                        <span class="material-symbols-outlined text-outline-variant text-sm">bug_report</span>
+                    </div>
+                    <div class="flex items-end gap-2">
+                        <span class="font-display-lg text-display-lg text-on-surface" id="honeypotCount">0</span>
+                        <span class="font-data-mono text-data-mono text-outline mb-2">/5</span>
+                    </div>
+                </div>
+                <div class="bg-surface-container/50 border border-outline-variant rounded p-4 flex flex-col justify-between relative overflow-hidden">
+                    <div class="flex justify-between items-start mb-2 relative z-10">
+                        <span class="font-label-caps text-label-caps text-on-surface-variant">MONITOR STATUS</span>
+                        <span class="material-symbols-outlined text-primary-fixed-dim text-sm pulse-glow">router</span>
+                    </div>
+                    <div class="flex items-center gap-3 relative z-10">
+                        <div class="w-3 h-3 rounded-full bg-primary-fixed-dim pulse-glow border border-primary-fixed"></div>
+                        <span class="font-headline-md text-headline-md text-primary-fixed-dim tracking-wider uppercase" style="font-size:18px;">Active</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-4 flex flex-col gap-4">
+                    <div class="bg-surface-container/40 border border-outline-variant rounded overflow-hidden">
+                        <div class="bg-surface-container-highest px-4 py-2 border-b border-outline-variant flex items-center justify-between">
+                            <span class="font-label-caps text-label-caps">SYSTEM STATUS</span>
+                            <span class="material-symbols-outlined text-outline text-sm">laptop_windows</span>
+                        </div>
+                        <div class="p-5 flex flex-col gap-3">
+                            <div class="flex flex-col">
+                                <span class="font-data-mono text-data-mono text-[10px] text-outline mb-1">CURRENT STATE</span>
+                                <span class="font-headline-md text-headline-md" id="statusText" style="font-size:20px;">NORMAL</span>
+                            </div>
+                            <div class="pt-3 border-t border-outline-variant border-dashed flex items-center justify-between">
+                                <span class="font-data-mono text-data-mono text-[10px] text-outline">AGENT STATUS</span>
+                                <div class="flex items-center gap-2 bg-primary-fixed-dim/10 px-2 py-1 rounded border border-primary-fixed-dim/30">
+                                    <div class="w-2 h-2 rounded-full bg-primary-fixed-dim pulse-glow"></div>
+                                    <span class="font-label-caps text-label-caps text-primary-fixed-dim">MONITORING: ACTIVE</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-surface-container/40 border border-outline-variant rounded flex flex-col flex-grow overflow-hidden">
+                        <div class="bg-surface-container-highest px-4 py-2 border-b border-outline-variant flex items-center justify-between">
+                            <span class="font-label-caps text-label-caps">RECENT TELEMETRY</span>
+                            <span class="material-symbols-outlined text-outline text-sm">list_alt</span>
+                        </div>
+                        <div class="p-2 overflow-y-auto flex-grow font-data-mono text-data-mono text-[11px] max-h-72" id="dashboardActivity"></div>
+                    </div>
+                </div>
+
+                <div class="col-span-8 flex flex-col gap-4">
+                    <div class="bg-surface-container/40 border border-outline-variant rounded flex items-center justify-center p-6 relative overflow-hidden">
+                        <div class="absolute inset-0 chart-grid"></div>
+                        <div class="flex flex-col items-center justify-center z-10 w-full">
+                            <div class="font-label-caps text-label-caps text-on-surface-variant mb-6 tracking-[0.2em] uppercase border-b border-outline-variant pb-2 px-8">System Threat Assessment</div>
+                            <div class="relative w-48 h-48 flex items-center justify-center mb-6">
+                                <svg class="absolute inset-0 w-full h-full text-outline-variant opacity-30 -rotate-90" viewBox="0 0 100 100"><circle cx="50" cy="50" fill="none" r="45" stroke="currentColor" stroke-dasharray="2 4" stroke-width="2"/></svg>
+                                <svg class="absolute inset-0 w-full h-full text-surface-container-highest -rotate-90" viewBox="0 0 100 100"><circle cx="50" cy="50" fill="none" r="40" stroke="currentColor" stroke-width="4"/></svg>
+                                <svg class="absolute inset-0 w-full h-full -rotate-90" id="gaugeRing" viewBox="0 0 100 100"><circle cx="50" cy="50" fill="none" r="40" stroke="currentColor" stroke-dasharray="251.2" stroke-dashoffset="251.2" stroke-linecap="round" stroke-width="4" id="gaugeCircle"/></svg>
+                                <div class="flex flex-col items-center justify-center bg-surface-container-lowest/80 rounded-full w-32 h-32 border border-outline-variant/50">
+                                    <span class="font-display-lg text-display-lg leading-none" id="gaugeScore">0</span>
+                                    <span class="font-data-mono text-data-mono text-[10px] text-outline mt-1">/100 RISK</span>
+                                </div>
+                            </div>
+                            <div class="px-6 py-3 rounded flex items-center gap-3" id="assessmentBanner">
+                                <span class="material-symbols-outlined" id="assessmentIcon">check_circle</span>
+                                <span class="font-body-md text-body-md" id="assessmentText">System Secure. No ransomware behavior detected.</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-surface-container/40 border border-outline-variant rounded flex flex-col flex-grow overflow-hidden">
+                        <div class="bg-surface-container-highest px-4 py-2 border-b border-outline-variant">
+                            <span class="font-label-caps text-label-caps">RISK SCORE TREND (LAST 20 EVENTS)</span>
+                        </div>
+                        <div class="p-4 flex-grow" id="trendChartWrap">
+                            <svg viewBox="0 0 1000 100" preserveAspectRatio="none" class="w-full h-32" id="trendChart"></svg>
+                            <p class="text-center text-outline-variant text-xs mt-2" id="trendEmpty">No activity yet - trigger a simulation to see live data.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ THREAT MONITOR ============ -->
+        <section id="page-threat" class="page">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full bg-primary-fixed-dim pulse-glow"></div>
+                    <h1 class="font-headline-md text-headline-md uppercase tracking-wider">Active Monitoring</h1>
+                </div>
+            </div>
+            <div class="flex gap-4" style="height: calc(100vh - 180px)">
+                <div class="w-2/3 flex flex-col bg-surface-container-low border border-outline-variant rounded overflow-hidden">
+                    <div class="bg-surface-container-highest border-b border-outline-variant px-6 py-4 flex justify-between items-center">
+                        <h2 class="font-label-caps text-label-caps text-primary tracking-widest flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[16px]">terminal</span> REAL-TIME ACTIVITY
+                        </h2>
+                        <span class="font-data-mono text-data-mono text-[12px] text-on-surface-variant">Auto-refresh: 2s</span>
+                    </div>
+                    <div class="flex-1 p-6 overflow-y-auto bg-surface-container-lowest font-data-mono text-data-mono text-sm leading-relaxed flex flex-col gap-2" id="threatFeed"></div>
+                </div>
+                <div class="w-1/3 flex flex-col gap-6">
+                    <div class="bg-surface-container-low border border-outline-variant rounded flex-1 flex flex-col overflow-hidden">
+                        <div class="bg-surface-container-highest border-b border-outline-variant px-6 py-4">
+                            <h2 class="font-label-caps text-label-caps flex items-center gap-2"><span class="material-symbols-outlined text-[16px]">monitoring</span> BEHAVIORAL INDICATORS</h2>
+                        </div>
+                        <div class="p-6 flex flex-col gap-6 flex-1 justify-center" id="behaviorIndicators"></div>
+                    </div>
+                    <div class="bg-error-container/10 border border-error/50 rounded p-6 flex flex-col items-center justify-center h-40" id="threatGaugeCard">
+                        <h3 class="font-label-caps text-label-caps opacity-80 mb-2">OVERALL RISK GAUGE</h3>
+                        <div class="font-display-lg text-display-lg font-bold tracking-tighter flex items-baseline" id="threatGaugeScore">0<span class="text-[24px] opacity-70 font-normal">/100</span></div>
+                        <div class="font-label-caps text-label-caps px-4 py-1 mt-3 rounded-full tracking-widest" id="threatGaugeStatus">NORMAL</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ SECURITY EVENTS ============ -->
+        <section id="page-events" class="page">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h1 class="font-headline-md text-headline-md">Security Events Log</h1>
+                    <p class="text-on-surface-variant text-sm">Real-time filesystem detection events</p>
+                </div>
+            </div>
+            <div class="bg-surface-container-low border border-outline-variant rounded overflow-hidden">
+                <div class="grid grid-cols-12 gap-2 px-4 py-3 bg-surface-container-highest border-b border-outline-variant font-label-caps text-label-caps text-on-surface-variant text-[11px]">
+                    <div class="col-span-2">TIME</div>
+                    <div class="col-span-2">EVENT</div>
+                    <div class="col-span-5">FILE</div>
+                    <div class="col-span-2">SEVERITY</div>
+                    <div class="col-span-1">RISK</div>
+                </div>
+                <div id="eventsTable" class="divide-y divide-outline-variant/30 font-data-mono text-data-mono text-[12px] max-h-[65vh] overflow-y-auto"></div>
+            </div>
+        </section>
+
+        <!-- ============ RISK ANALYSIS ============ -->
+        <section id="page-risk" class="page">
+            <h1 class="font-headline-md text-headline-md mb-4">Risk Analysis</h1>
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="col-span-1 bg-surface-container/40 border border-outline-variant rounded p-6 flex flex-col items-center justify-center">
+                    <span class="font-label-caps text-label-caps text-on-surface-variant mb-3">AI RATIONALE</span>
+                    <div class="font-display-lg text-display-lg" id="riskAnalysisScore">0</div>
+                    <span class="font-data-mono text-data-mono text-outline">/100 - CURRENT RISK ASSESSMENT</span>
+                    <p class="text-sm text-on-surface-variant mt-4 text-center" id="riskRationale">Waiting for filesystem activity to analyze...</p>
+                </div>
+                <div class="col-span-2 bg-surface-container/40 border border-outline-variant rounded p-6">
+                    <span class="font-label-caps text-label-caps text-on-surface-variant mb-4 block">RISK CONTRIBUTORS (LAST 10 SECONDS)</span>
+                    <div class="flex flex-col gap-4" id="riskContributors"></div>
+                </div>
+            </div>
+            <div class="bg-surface-container/40 border border-outline-variant rounded p-6">
+                <span class="font-label-caps text-label-caps text-on-surface-variant mb-4 block">SUSPICIOUS FILE EXTENSIONS DETECTED</span>
+                <div id="suspiciousExtensions" class="flex flex-wrap gap-2">
+                    <span class="text-on-surface-variant text-sm">None detected</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ DECEPTION CENTER ============ -->
+        <section id="page-deception" class="page">
+            <h1 class="font-headline-md text-headline-md mb-1">Deception Center</h1>
+            <p class="text-on-surface-variant text-sm mb-4">Controlled honeypot files used to catch unauthorized encryption/rename behavior</p>
+            <div class="grid grid-cols-3 gap-4" id="honeypotGrid"></div>
+        </section>
+
+        <!-- ============ INCIDENTS ============ -->
+        <section id="page-incidents" class="page">
+            <h1 class="font-headline-md text-headline-md mb-4">Incident Response</h1>
+            <div class="flex flex-col gap-3" id="incidentsList"></div>
+        </section>
+
+    </main>
+</div>
+
+<div id="toast" class="toast fixed bottom-6 right-6 bg-surface-container-highest border border-primary-fixed-dim/50 text-on-surface px-5 py-3 rounded shadow-lg opacity-0 pointer-events-none z-50"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

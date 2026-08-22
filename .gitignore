@@ -1,0 +1,40 @@
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+
+# Python cache & bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Logs and incident runtime files (keep the directory with .gitkeep)
+logs/*.json
+!logs/.gitkeep
+
+# Backups and temporary files
+backups/*
+!backups/.gitkeep
+
+# Sandbox test files generated during simulation (keep directory structure)
+sandbox/documents/*
+!sandbox/documents/.gitkeep
+sandbox/honeypots/*
+!sandbox/honeypots/.gitkeep
+sandbox/images/*
+!sandbox/images/.gitkeep
+
+# IDE and OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
